@@ -278,4 +278,24 @@ EOM
     assertEquals 1 "${result}"
 }
 
+test_when_comment_is_included_it_should_be_skipped_during_verification() {
+    local commit_message=
+    read -r -d '' commit_message << EOM
+This is the subject of the commit message
+
+This is the first line of the body
+# This is a very long comment line, however it should be skipped during the verification
+# This is a short comment line it should be skipped as well
+# This is a very long comment line, however it should be skipped during the verification
+EOM
+    output="$(verify_commit_message "${commit_message}" 2>&1)"
+    result=$?
+    read -r -d '' expected_output << EOM
+ERRORS: 0
+WARNINGS: 0
+EOM
+    assertEquals "${expected_output}" "${output}"
+    assertEquals 0 "${result}"
+}
+
 source "shunit2"

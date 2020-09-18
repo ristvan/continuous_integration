@@ -44,6 +44,11 @@ verify_commit_message() {
         blankLines = 0
     }
 
+    # Skip comments
+    /^#/ {
+        next
+    }
+
     # Check emptyness of second line
     (NR == 2 && isSecondLineEmpty == 0) {
        print "ERROR: The second line of the commit message MUST BE an empty line."
