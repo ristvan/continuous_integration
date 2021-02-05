@@ -298,4 +298,109 @@ EOM
     assertEquals 0 "${result}"
 }
 
+
+test_commit_first_line_finishes_with_capital_letter_should_be_ok()
+{
+    local commit_message="This is the subject of the commit MESSAGE"
+    local result=0
+
+    output="$(verify_commit_message "${commit_message}" 2>&1)"
+    result=$?
+    read -r -d '' expected_output << EOM
+ERRORS: 0
+WARNINGS: 0
+EOM
+    assertEquals "${expected_output}" "${output}"
+    assertEquals 0 "${result}"
+}
+
+test_commit_first_line_finishes_with_dash_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "-"
+}
+
+test_commit_first_line_finishes_with_dot_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "."
+}
+
+test_commit_first_line_finishes_with_exclamation_mark_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "!"
+}
+
+test_commit_first_line_finishes_with_question_mark_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "?"
+}
+
+test_commit_first_line_finishes_with_coma_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject ","
+}
+
+test_commit_first_line_finishes_with_semicolon_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject ";"
+}
+
+test_commit_first_line_finishes_with_colon_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject ":"
+}
+
+test_commit_first_line_finishes_with_underscore_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "_"
+}
+
+test_commit_first_line_finishes_with_parentheses_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "("
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject ")"
+}
+
+test_commit_first_line_finishes_with_square_bracket_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "["
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "]"
+}
+
+test_commit_first_line_finishes_with_curly_bracket_should_be_an_error()
+{
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "{"
+    assert_that_given_punctuation_mark_is_invalid_at_end_of_subject "}"
+}
+
+assert_that_given_punctuation_mark_is_invalid_at_end_of_subject() {
+    local punctuation_mark="$1"
+    local commit_message="This is the subject of the commit MESSAGE${punctuation_mark}"
+    local result=0
+
+    output="$(verify_commit_message "${commit_message}" 2>&1)"
+    result=$?
+    read -r -d '' expected_output << EOM
+ERROR: The subject MUST NOT end with punctuation mark -> line: 1
+ * This is the subject of the commit MESSAGE${punctuation_mark} <--
+ERRORS: 1
+WARNINGS: 0
+EOM
+    assertEquals "${expected_output}" "${output}"
+    assertEquals 1 "${result}"
+}
+
+test_when_component_names_added_it_should_be_accepted() {
+    local commit_message="[COMPONENT][SUB_COMP] Move log to new folder"
+    local result=0
+
+    output="$(verify_commit_message "${commit_message}" 2>&1)"
+    result=$?
+    read -r -d '' expected_output << EOM
+ERRORS: 0
+WARNINGS: 0
+EOM
+    assertEquals "${expected_output}" "${output}"
+    assertEquals 0 "${result}"
+}
+
 source "shunit2"

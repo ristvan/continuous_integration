@@ -73,14 +73,14 @@ verify_commit_message() {
         }
     }
 
-    /[.!?,;:-_()\[\]{}]$/ {
+    /[.!?,;:\-_()\[\]{}]$/ {
         if (NR == 1) {
             print "ERROR: The subject MUST NOT end with punctuation mark -> line:", NR
             print " *", $0, "<--"
             numberOfErrors += 1
-        } 
+        }
     }
-   
+
     match($0, /[A-Z][A-Z0-9]+-[0-9]+/, m) {
         if (NR == 1) {
             print "ERROR: The subject MUST NOT contain ticket number"
