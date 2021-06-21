@@ -120,11 +120,29 @@ verify_commit_message() {
     return $?
 }
 
-#verify_commit_message
-#ec=$?
-#if  (( ${ec} != 0 )); then
-#    echo
-#    echo "Commit is rejected!!!"
-#    echo
-#    exit 1
-#fi
+print_help_at_failure() {
+    local commit_msg_file_name="$1"
+    cat << EOM
+    The commit message was saved into the '${commit_msg_file_name}' temporary file.
+    Use the following command to edit and solve the issue with your commit:
+        git commit -t ${commit_msg_file_name}
+
+EOM
+}
+
+check_commit_message() {
+    local commit_message="$1"
+    local backup_commit_msg_file=".saved-commit.msg"
+    rm -f "${backup_commit_msg_file}"
+    verify_commit_message "${commit_message}"
+    local exit_code=$?
+    if (( exit_code != 0 )); then
+        echo
+        echo "Commit message is rejected"
+        echo
+        echo "${commit_message}" > "${backup_commit_msg_file}"
+        print_help_at_failure "${backup_commit_msg_file}"
+        exit 1
+    fi
+}
+

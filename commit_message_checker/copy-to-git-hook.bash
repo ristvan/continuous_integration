@@ -31,15 +31,7 @@ source "${validator_script}"
 EOM
 
     cat <<'EOM' >> "${commit_msg_hook}"
-
-verify_commit_message "$(<"${MSG}")"
-ec=$?
-if (( ${ec} != 0 )); then
-    echo
-    echo "Commit is rejected!!!"
-    echo
-    exit 1
-fi
+check_commit_message "$(<"${MSG}")"
 # end of CMV
 EOM
 }

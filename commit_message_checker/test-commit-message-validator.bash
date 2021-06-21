@@ -403,4 +403,58 @@ EOM
     assertEquals 0 "${result}"
 }
 
+test_that_print_help_at_failureprints_correct_information() {
+    local filename="test_file.msg"
+    local output=""
+    output="$(print_help_at_failure "${filename}")"
+    expected_output="$(cat << EOM
+    The commit message was saved into the '${filename}' temporary file.
+    Use the following command to edit and solve the issue with your commit:
+        git commit -t ${filename}
+EOM
+    )"
+    assertEquals "${expected_output}" "${output}"
+}
+
+test_check_commit_message_when_component_names_added_it_should_be_accepted() {
+    local commit_message="[COMPONENT][SUB_COMP] Move log to new folder"
+    local result=0
+
+    output="$(check_commit_message "${commit_message}" 2>&1)"
+    result=$?
+    read -r -d '' expected_output << EOM
+ERRORS: 0
+WARNINGS: 0
+EOM
+    assertEquals "${expected_output}" "${output}"
+    assertEquals 0 "${result}"
+}
+
+test_that_check_commit_message_creates_file_when_commit_is_invalid() {
+    local commit_message="This is the subject of the commit MESSAGE."
+    local result=0
+    local commit_message_filename=".saved-commit.msg"
+
+    output="$(check_commit_message "${commit_message}" 2>&1)"
+    result=$?
+    read -r -d '' expected_output << EOM
+ERROR: The subject MUST NOT end with punctuation mark -> line: 1
+ * This is the subject of the commit MESSAGE. <--
+ERRORS: 1
+WARNINGS: 0
+
+Commit message is rejected
+
+    The commit message was saved into the '${commit_message_filename}' temporary file.
+    Use the following command to edit and solve the issue with your commit:
+        git commit -t ${commit_message_filename}
+EOM
+    assertEquals "${expected_output}" "${output}"
+    assertEquals 1 "${result}"
+#    test -f ".saved-commit.msg"
+#    is_file_exists=$?
+    assertTrue ".saved-commit.msg does not exists" "[ -f ${commit_message_filename} ]"
+    rm -rf "${commit_message_filename}"
+}
+
 source "shunit2"
